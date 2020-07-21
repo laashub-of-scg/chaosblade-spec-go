@@ -62,11 +62,20 @@ type ExpActionCommandSpec interface {
 	// LongDesc returns full description for the action
 	LongDesc() string
 
+	// SetLongDesc
+	SetLongDesc(longDesc string)
+
 	// Matchers returns the list of matchers supported by the action
 	Matchers() []ExpFlagSpec
 
 	// Flags returns the list of flags supported by the action
 	Flags() []ExpFlagSpec
+
+	//Example returns command example
+	Example() Example
+
+	//Example returns command example
+	SetExample(example Example)
 
 	// ExpExecutor returns the action command ExpExecutor
 	Executor() Executor
@@ -149,11 +158,25 @@ func (b *BaseExpModelCommandSpec) SetFlags(flags []ExpFlagSpec) {
 	b.ExpFlags = flags
 }
 
+func (b *BaseExpModelCommandSpec) Example() string {
+	var example string
+	for _, spec := range b.Actions() {
+		if len(spec.Example().ExampleCommands) > 0 {
+			for _, command := range spec.Example().ExampleCommands {
+				example = example + "\n\n  # " + command.Annotation + "\n  " + command.Command
+			}
+		}
+	}
+	return strings.Replace(example, "\n\n", "", 1 )
+}
+
 // BaseExpActionCommandSpec defines the common struct of the implementation of ExpActionCommandSpec
 type BaseExpActionCommandSpec struct {
 	ActionMatchers []ExpFlagSpec
 	ActionFlags    []ExpFlagSpec
 	ActionExecutor Executor
+	ActionLongDesc string
+	ActionExample  Example
 }
 
 func (b *BaseExpActionCommandSpec) Matchers() []ExpFlagSpec {
@@ -172,6 +195,32 @@ func (b *BaseExpActionCommandSpec) SetExecutor(executor Executor) {
 	b.ActionExecutor = executor
 }
 
+func (b *BaseExpActionCommandSpec) SetExample(example Example) {
+	b.ActionExample = example
+}
+
+func (b *BaseExpActionCommandSpec) SetLongDesc(longDesc string) {
+	b.ActionLongDesc = longDesc
+}
+
+func (b *BaseExpActionCommandSpec) Example() Example {
+	return b.ActionExample
+}
+
+type ExampleCommand struct {
+	
+	Annotation string			`yaml:"annotation"`
+	Command string				`yaml:"command"`
+ 	CommandResult string		`yaml:"commandResult,omitempty"`
+	ImageUrl string				`yaml:"imageUrl,omitempty"`
+}
+
+type Example struct {
+	Introduction    string				`yaml:"introduction,omitempty"`
+	ExampleCommands []ExampleCommand	`yaml:"exampleCommands"`
+	Summary         string				`yaml:"summary,omitempty"`
+}
+
 // ActionModel for yaml file
 type ActionModel struct {
 	ActionName      string    `yaml:"action"`
@@ -180,7 +229,16 @@ type ActionModel struct {
 	ActionLongDesc  string    `yaml:"longDesc"`
 	ActionMatchers  []ExpFlag `yaml:"matchers,omitempty"`
 	ActionFlags     []ExpFlag `yaml:"flags,omitempty"`
+	ActionExample   Example   `yaml:"example"`
 	executor        Executor
+}
+
+func (am *ActionModel) SetExample(example Example) {
+	am.ActionExample = example;
+}
+
+func (am *ActionModel) Example() Example {
+	return am.ActionExample;
 }
 
 func (am *ActionModel) SetExecutor(executor Executor) {
@@ -201,6 +259,10 @@ func (am *ActionModel) Aliases() []string {
 
 func (am *ActionModel) ShortDesc() string {
 	return am.ActionShortDesc
+}
+
+func (am *ActionModel) SetLongDesc(longDesc string) {
+	am.ActionLongDesc = longDesc
 }
 
 func (am *ActionModel) LongDesc() string {

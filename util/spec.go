@@ -17,11 +17,10 @@
 package util
 
 import (
+	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"os"
-
-	"gopkg.in/yaml.v2"
 
 	"github.com/chaosblade-io/chaosblade-spec-go/spec"
 )
@@ -87,6 +86,7 @@ func ConvertSpecToModels(commandSpec spec.ExpModelCommandSpec, prepare spec.ExpP
 			ActionAliases:   action.Aliases(),
 			ActionShortDesc: action.ShortDesc(),
 			ActionLongDesc:  action.LongDesc(),
+			ActionExample:   action.Example(),
 			ActionMatchers: func() []spec.ExpFlag {
 				matchers := make([]spec.ExpFlag, 0)
 				for _, m := range action.Matchers() {
